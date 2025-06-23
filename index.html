@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1976d2" />
+    <title>Maré em João Pessoa</title>
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        padding: 1rem;
+        background: #f0f8ff;
+        color: #333;
+      }
+      .container {
+        max-width: 480px;
+        margin: auto;
+      }
+      h1 {
+        font-size: 1.5rem;
+        color: #1976d2;
+      }
+      select {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        font-size: 1rem;
+        width: 100%;
+      }
+      .tide-entry {
+        background: #fff;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .loading {
+        color: #888;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Tábua de Maré - João Pessoa</h1>
+      <label for="day-select">Selecione o dia:</label>
+      <select id="day-select"></select>
+      <div id="tides" class="loading">Carregando dados da maré...</div>
+    </div>
+
+    <script>
+      // Os dados serão carregados de tides-2025.json
+      let tideData = [];
+
+      const tidesEl = document.getElementById("tides");
+      const daySelect = document.getElementById("day-select");
+
+      function populateDaySelector() {
+        const uniqueDates = [
+          ...new Set(tideData.map((t) => t.datetime.split("T")[0])),
+        ].sort((a, b) => new Date(a) - new Date(b));
+        uniqueDates.forEach((date) => {
+          const opt = document.createElement("option");
+          opt.value = date;
+          opt.textContent = new Date(date).toLocaleDateString("pt-BR", {
+            weekday: "long",
+            day: "2-digit",
+            month: "long",
+          });
+          daySelect.appendChild(opt);
+        });
+      }
+
+      function showTidesFor(date) {
+        const tides = tideData.filter((t) => t.datetime.startsWith(date));
+        if (tides.length === 0) {
+          tidesEl.innerHTML = "Sem dados disponíveis para esta data.";
+          return;
+        }
+        tidesEl.innerHTML = tides
+          .map((t) => {
+            const time = new Date(t.datetime).toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            return `<div class="tide-entry"><strong>${time}</strong>: ${t.height.toFixed(
+              2
+            )} m</div>`;
+          })
+          .join("");
+      }
+
+      daySelect.addEventListener("change", () => {
+        showTidesFor(daySelect.value);
+      });
+
+      fetch("tides-2025.json")
+        .then((res) => res.json())
+        .then((data) => {
+          tideData = data;
+          populateDaySelector();
+          const today = new Date().toISOString().split("T")[0];
+          if ([...daySelect.options].some((opt) => opt.value === today)) {
+            daySelect.value = today;
+            showTidesFor(today);
+          } else {
+            daySelect.selectedIndex = 0;
+            showTidesFor(daySelect.value);
+          }
+        })
+        .catch((err) => {
+          tidesEl.innerHTML = "Erro ao carregar os dados da maré.";
+          console.error(err);
+        });
+      const today = new Date().toISOString().split("T")[0];
+      if ([...daySelect.options].some((opt) => opt.value === today)) {
+        daySelect.value = today;
+        showTidesFor(today);
+      } else {
+        daySelect.selectedIndex = 0;
+        showTidesFor(daySelect.value);
+      }
+
+      if ("serviceWorker" in navigator) {
+        fetch("sw.js")
+          .then((response) => {
+            if (response.ok) {
+              navigator.serviceWorker.register("sw.js").catch(console.error);
+            } else {
+              console.warn(
+                "Service worker não encontrado. Ignorando registro."
+              );
+            }
+          })
+          .catch((err) => {
+            console.warn("Erro ao verificar service worker:", err);
+          });
+      }
+    </script>
+  </body>
+</html>
