@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1976d2" />
     <title>Maré em João Pessoa</title>
-    <link rel="manifest" href="manifest.json" />
+
     <style>
       body {
         font-family: sans-serif;
@@ -22,11 +22,16 @@
         font-size: 1.5rem;
         color: #1976d2;
       }
-      select {
+      input[type="date"] {
         margin-top: 1rem;
         padding: 0.5rem;
         font-size: 1rem;
         width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        background: #fff;
+        color: #333;
       }
       .tide-entry {
         background: #fff;
@@ -39,12 +44,17 @@
         color: #888;
       }
     </style>
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
   </head>
   <body>
     <div class="container">
       <h1>Tábua de Maré - João Pessoa</h1>
-      <label for="day-select">Selecione o dia:</label>
-      <select id="day-select"></select>
+      <label for="day-picker">Selecione o dia:</label>
+      <input type="date" id="day-picker" />
       <div id="tides" class="loading">Carregando dados da maré...</div>
     </div>
 
@@ -53,7 +63,7 @@
       let tideData = [];
 
       const tidesEl = document.getElementById("tides");
-      const daySelect = document.getElementById("day-select");
+      const dayPicker = document.getElementById("day-picker");
 
       function populateDaySelector() {
         const uniqueDates = [
@@ -90,36 +100,30 @@
           .join("");
       }
 
-      daySelect.addEventListener("change", () => {
-        showTidesFor(daySelect.value);
+      dayPicker.addEventListener("change", () => {
+        showTidesFor(dayPicker.value);
       });
 
       fetch("tides-2025.json")
         .then((res) => res.json())
         .then((data) => {
           tideData = data;
-          populateDaySelector();
+          const dates = tideData.map((t) => t.datetime.split("T")[0]);
+          const uniqueDates = [...new Set(dates)].sort(
+            (a, b) => new Date(a) - new Date(b)
+          );
           const today = new Date().toISOString().split("T")[0];
-          if ([...daySelect.options].some((opt) => opt.value === today)) {
-            daySelect.value = today;
-            showTidesFor(today);
-          } else {
-            daySelect.selectedIndex = 0;
-            showTidesFor(daySelect.value);
-          }
+          dayPicker.min = uniqueDates[0];
+          dayPicker.max = uniqueDates[uniqueDates.length - 1];
+          dayPicker.value = uniqueDates.includes(today)
+            ? today
+            : uniqueDates[0];
+          showTidesFor(dayPicker.value);
         })
         .catch((err) => {
           tidesEl.innerHTML = "Erro ao carregar os dados da maré.";
           console.error(err);
         });
-      const today = new Date().toISOString().split("T")[0];
-      if ([...daySelect.options].some((opt) => opt.value === today)) {
-        daySelect.value = today;
-        showTidesFor(today);
-      } else {
-        daySelect.selectedIndex = 0;
-        showTidesFor(daySelect.value);
-      }
 
       if ("serviceWorker" in navigator) {
         fetch("sw.js")
