@@ -27,6 +27,7 @@
         padding: 0.5rem;
         font-size: 1rem;
         width: 100%;
+        max-width: 97%;
         border: 1px solid #ccc;
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -82,22 +83,56 @@
       }
 
       function showTidesFor(date) {
-        const tides = tideData.filter((t) => t.datetime.startsWith(date));
+        const tides = tideData
+          .filter((t) => t.datetime.startsWith(date))
+          .sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
         if (tides.length === 0) {
           tidesEl.innerHTML = "Sem dados disponíveis para esta data.";
           return;
         }
-        tidesEl.innerHTML = tides
-          .map((t) => {
-            const time = new Date(t.datetime).toLocaleTimeString("pt-BR", {
+
+        const now = new Date();
+        const nowStr = now.toISOString();
+
+        let estimate = null;
+        let estimateTime = null;
+        let trend = "";
+        for (let i = 0; i < tides.length - 1; i++) {
+          const t1 = new Date(tides[i].datetime);
+          const t2 = new Date(tides[i + 1].datetime);
+          if (now >= t1 && now <= t2) {
+            const h1 = tides[i].height;
+            const h2 = tides[i + 1].height;
+            const pct = (now - t1) / (t2 - t1);
+            const interp = h1 + (h2 - h1) * 0.5 * (1 - Math.cos(Math.PI * pct));
+            estimate = interp.toFixed(2);
+            estimateTime = now.toLocaleTimeString("pt-BR", {
               hour: "2-digit",
               minute: "2-digit",
             });
-            return `<div class="tide-entry"><strong>${time}</strong>: ${t.height.toFixed(
-              2
-            )} m</div>`;
-          })
-          .join("");
+            trend = h2 > h1 ? "⬆ subindo" : "⬇ descendo";
+            break;
+          }
+        }
+
+        let estimateHtml = "";
+        if (estimate) {
+          estimateHtml = `<div class="tide-entry" style="background:#e0f7ff;font-weight:bold;">📍 Maré estimada às ${estimateTime}: ${estimate} m <span style='float:right;'>${trend}</span></div>`;
+        }
+        tidesEl.innerHTML =
+          estimateHtml +
+          tides
+            .map((t) => {
+              const time = new Date(t.datetime).toLocaleTimeString("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              const icon = t.height >= 2 ? "🌊" : t.height <= 0.5 ? "🌘" : "🌅";
+              return `<div class="tide-entry">${icon} <strong>${time}</strong>: ${t.height.toFixed(
+                2
+              )} m</div>`;
+            })
+            .join("");
       }
 
       dayPicker.addEventListener("change", () => {
