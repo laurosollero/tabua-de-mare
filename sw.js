@@ -1,17 +1,17 @@
-const CACHE_NAME = "mare-jp-v3";
+const CACHE_NAME = "mare-jp-v4";
 const ASSETS = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/site.webmanifest",
-  "/tides.json",
-  "/favicon.ico",
-  "/favicon.svg",
-  "/favicon-96x96.png",
-  "/apple-touch-icon.png",
-  "/web-app-manifest-192x192.png",
-  "/web-app-manifest-512x512.png",
+  "./",
+  "index.html",
+  "styles.css",
+  "app.js",
+  "site.webmanifest",
+  "tides.json",
+  "favicon.ico",
+  "favicon.svg",
+  "favicon-96x96.png",
+  "apple-touch-icon.png",
+  "web-app-manifest-192x192.png",
+  "web-app-manifest-512x512.png",
   "https://cdn.jsdelivr.net/npm/chart.js"
 ];
 

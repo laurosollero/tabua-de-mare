@@ -415,7 +415,7 @@ fetch("tides.json")
 
 // Register service worker
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").catch(console.error);
+  navigator.serviceWorker.register("sw.js").catch(console.error);
 }
 
 // Install prompt handling
