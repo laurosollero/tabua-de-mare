@@ -1,7 +1,9 @@
-const CACHE_NAME = "mare-jp-v2";
+const CACHE_NAME = "mare-jp-v3";
 const ASSETS = [
   "/",
   "/index.html",
+  "/styles.css",
+  "/app.js",
   "/site.webmanifest",
   "/tides.json",
   "/favicon.ico",
