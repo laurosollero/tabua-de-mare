@@ -1,4 +1,4 @@
-const CACHE_NAME = "mare-jp-v5";
+const CACHE_NAME = "mare-jp-v7";
 const ASSETS = [
   "./",
   "index.html",
@@ -6,6 +6,7 @@ const ASSETS = [
   "app.js",
   "site.webmanifest",
   "tides.json",
+  "pix-qr.png",
   "favicon.ico",
   "favicon.svg",
   "favicon-96x96.png",
