@@ -13,7 +13,8 @@ This is a static PWA (Progressive Web App) that displays tide information for Jo
 - `app.js` - All application logic (data loading, chart rendering, time calculations)
 - `styles.css` - Responsive styling
 - `tides.json` - Tide data with datetime and height values
-- `sw.js` - Service worker for offline caching (cache version: `mare-jp-v4`)
+- `sw.js` - Service worker for offline caching
+- `pix-qr.png` - Pix QR code for donations (EMV/BR Code format)
 - `site.webmanifest` - PWA manifest
 
 **Key patterns in app.js:**
@@ -48,7 +49,7 @@ php -S localhost:8000
 
 ## Service Worker
 
-When modifying cached assets, increment `CACHE_NAME` version in `sw.js` (currently `mare-jp-v4`).
+When modifying cached assets, increment `CACHE_NAME` version in `sw.js`.
 
 ## Language
 
@@ -57,7 +58,6 @@ UI text and comments are in Portuguese (Brazilian).
 ## Backlog / Future Ideas
 
 - **"Piscinas naturais" indicator**: Show tag when tide < 0.4m (ideal for Picãozinho, Seixas, Areia Vermelha)
-- **QR Code for Pix**: Easier cross-device donations
 - **Fase da Lua**: Moon phase icon (affects tide intensity - sizígia vs quadratura)
 - **Multiple locations**: Support other PB beaches (Cabedelo, Conde, Lucena) with favorites
 - **Chart sync check**: Verify "Agora" time matches the red line position on chart

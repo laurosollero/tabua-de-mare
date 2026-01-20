@@ -98,36 +98,11 @@ function generateChartData(tides, selectedDate) {
     // Add the tide point itself
     labels.push(formatTideTime(parsed));
     data.push(tide.height);
-    pointColors.push("#1976d2");
+    // Don't show dot for synthetic boundary points
+    pointColors.push(tide.synthetic ? "transparent" : "#1976d2");
 
-    // Track if current time falls near this point
-    if (isToday && currentTimeIndex === -1) {
-      if (i < tides.length - 1) {
-        const nextParsed = parseTideTime(tides[i + 1].datetime);
-        const nextMinutes = toMinutes(nextParsed.hour, nextParsed.minute);
-        if (nowMinutes >= tideMinutes && nowMinutes < nextMinutes) {
-          // Add interpolated points between this tide and next
-          let currentMin = tideMinutes + 15;
-          while (currentMin < nextMinutes) {
-            const h = Math.floor(currentMin / 60);
-            const m = currentMin % 60;
-            labels.push(formatTime(h, m));
-
-            const pct = (currentMin - tideMinutes) / (nextMinutes - tideMinutes);
-            data.push(interpolateTide(tide.height, tides[i + 1].height, pct));
-            pointColors.push("transparent");
-
-            // Check if this is the current time slot
-            if (currentTimeIndex === -1 && currentMin <= nowMinutes && currentMin + 15 > nowMinutes) {
-              currentTimeIndex = labels.length - 1;
-            }
-
-            currentMin += 15;
-          }
-        }
-      }
-    } else if (i < tides.length - 1) {
-      // Add interpolated points for smooth curve
+    // Add interpolated points between this tide and the next
+    if (i < tides.length - 1) {
       const nextParsed = parseTideTime(tides[i + 1].datetime);
       const nextMinutes = toMinutes(nextParsed.hour, nextParsed.minute);
 
@@ -140,6 +115,11 @@ function generateChartData(tides, selectedDate) {
         const pct = (currentMin - tideMinutes) / (nextMinutes - tideMinutes);
         data.push(interpolateTide(tide.height, tides[i + 1].height, pct));
         pointColors.push("transparent");
+
+        // Track current time index if this is today
+        if (isToday && currentTimeIndex === -1 && currentMin <= nowMinutes && currentMin + 15 > nowMinutes) {
+          currentTimeIndex = labels.length - 1;
+        }
 
         currentMin += 15;
       }
@@ -358,7 +338,50 @@ function showTidesFor(date) {
     nextTideEl.innerHTML = "";
   }
 
-  renderChart(tides, date);
+  // Get boundary tides for smooth chart edges
+  const sortedAll = [...tideData].sort((a, b) => a.datetime.localeCompare(b.datetime));
+  const firstTideTime = tides[0].datetime;
+  const lastTideTime = tides[tides.length - 1].datetime;
+
+  // Find the tide just before the first tide of this day
+  const prevTide = sortedAll.filter(t => t.datetime < firstTideTime).pop();
+  // Find the tide just after the last tide of this day
+  const nextTide = sortedAll.find(t => t.datetime > lastTideTime);
+
+  // Build extended tides array with synthetic boundary points at 00:00 and 23:59
+  const chartTides = [];
+
+  // Add synthetic point at 00:00 if we have previous day data
+  if (prevTide) {
+    const prevParsed = parseTideTime(prevTide.datetime);
+    const firstParsed = parseTideTime(tides[0].datetime);
+    const prevMinutes = toMinutes(prevParsed.hour, prevParsed.minute);
+    const firstMinutes = toMinutes(firstParsed.hour, firstParsed.minute);
+    // Minutes from prevTide to midnight, then midnight to firstTide
+    const totalMinutes = (1440 - prevMinutes) + firstMinutes;
+    const minutesToMidnight = 1440 - prevMinutes;
+    const pct = minutesToMidnight / totalMinutes;
+    const midnightHeight = interpolateTide(prevTide.height, tides[0].height, pct);
+    chartTides.push({ datetime: `${date}T00:00:00`, height: midnightHeight, synthetic: true });
+  }
+
+  chartTides.push(...tides);
+
+  // Add synthetic point at 23:59 if we have next day data
+  if (nextTide) {
+    const lastParsed = parseTideTime(lastTideTime);
+    const nextParsed = parseTideTime(nextTide.datetime);
+    const lastMinutes = toMinutes(lastParsed.hour, lastParsed.minute);
+    const nextMinutes = toMinutes(nextParsed.hour, nextParsed.minute);
+    // Minutes from lastTide to midnight, then midnight to nextTide
+    const totalMinutes = (1440 - lastMinutes) + nextMinutes;
+    const minutesToEndOfDay = 1439 - lastMinutes; // 23:59
+    const pct = minutesToEndOfDay / totalMinutes;
+    const endOfDayHeight = interpolateTide(tides[tides.length - 1].height, nextTide.height, pct);
+    chartTides.push({ datetime: `${date}T23:59:00`, height: endOfDayHeight, synthetic: true });
+  }
+
+  renderChart(chartTides, date);
 
   tidesEl.innerHTML = tides
     .map((t) => {
