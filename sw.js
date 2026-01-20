@@ -1,4 +1,4 @@
-const CACHE_NAME = "mare-jp-v4";
+const CACHE_NAME = "mare-jp-v5";
 const ASSETS = [
   "./",
   "index.html",
