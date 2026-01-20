@@ -486,3 +486,33 @@ const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 if (isIOS && !isStandalone()) {
   setTimeout(showInstallBanner, 2000);
 }
+
+// Copy Pix key
+const copyPixBtn = document.getElementById("copy-pix");
+const pixKey = document.getElementById("pix-key");
+
+copyPixBtn.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(pixKey.textContent);
+    copyPixBtn.textContent = "Copiado!";
+    copyPixBtn.classList.add("copied");
+    setTimeout(() => {
+      copyPixBtn.textContent = "Copiar";
+      copyPixBtn.classList.remove("copied");
+    }, 2000);
+  } catch (err) {
+    // Fallback for older browsers
+    const range = document.createRange();
+    range.selectNode(pixKey);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+    copyPixBtn.textContent = "Copiado!";
+    copyPixBtn.classList.add("copied");
+    setTimeout(() => {
+      copyPixBtn.textContent = "Copiar";
+      copyPixBtn.classList.remove("copied");
+    }, 2000);
+  }
+});
