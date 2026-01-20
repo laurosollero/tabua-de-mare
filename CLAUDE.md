@@ -53,3 +53,11 @@ When modifying cached assets, increment `CACHE_NAME` version in `sw.js` (current
 ## Language
 
 UI text and comments are in Portuguese (Brazilian).
+
+## Backlog / Future Ideas
+
+- **"Piscinas naturais" indicator**: Show tag when tide < 0.4m (ideal for Picãozinho, Seixas, Areia Vermelha)
+- **QR Code for Pix**: Easier cross-device donations
+- **Fase da Lua**: Moon phase icon (affects tide intensity - sizígia vs quadratura)
+- **Multiple locations**: Support other PB beaches (Cabedelo, Conde, Lucena) with favorites
+- **Chart sync check**: Verify "Agora" time matches the red line position on chart
